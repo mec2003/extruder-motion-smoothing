@@ -49,9 +49,8 @@ E também imprime:
 - Esse modelo ajuda a encontrar o equilíbrio entre rapidez e qualidade.
 
 🧪 Exemplo de Uso
-Execute o script com: python extrusora_spline.py
+Execute o script com:  python extrusora_spline.py
 
-🧰 Autoria
-
-Este projeto foi desenvolvido como parte de um trabalho de Matemática Computacional, com o objetivo de aplicar conceitos de cálculo, física e computação para resolver um problema real no contexto de impressão 3D.
+🧰 Autoria: 
+Este projeto foi desenvolvido como parte de um trabalho de Matemática Computacional, com o objetivo de aplicar conceitos de cálculo, física e computação para resolver um problema real no contexto de impressão 3D. Alunos: Maria Eduarda de Carvalho e Tiago Godart
 
