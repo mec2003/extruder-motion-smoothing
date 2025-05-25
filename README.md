@@ -1,4 +1,5 @@
 🧵 Suavização do Movimento da Extrusora 3D com Splines
+
 Este projeto simula e analisa o movimento de uma extrusora de impressora 3D utilizando splines cúbicas para suavizar a trajetória e evitar movimentos bruscos. 
 Ele considera jerk e massa da extrusora para estimar o risco de ghosting (vibrações que afetam a qualidade da impressão).
 
@@ -51,5 +52,6 @@ E também imprime:
 Execute o script com: python extrusora_spline.py
 
 🧰 Autoria
+
 Este projeto foi desenvolvido como parte de um trabalho de Matemática Computacional, com o objetivo de aplicar conceitos de cálculo, física e computação para resolver um problema real no contexto de impressão 3D.
 
