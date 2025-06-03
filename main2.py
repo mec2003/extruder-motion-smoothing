@@ -1,3 +1,7 @@
+# Extrusora 3D com Splines Suavizadas (2D)
+# Projeto de Matemática Computacional
+# Objetivo: Suavizar o movimento da extrusora em 2D usando splines cúbicas e analisar jerk e forças envolvidas
+
 import numpy as np
 import matplotlib.pyplot as plt
 from spline import spline  # importa sua função de spline personalizada
