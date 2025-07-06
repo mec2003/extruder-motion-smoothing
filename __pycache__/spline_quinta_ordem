@@ -1,0 +1,95 @@
+import numpy as np
+from scipy.interpolate import BPoly
+import matplotlib.pyplot as plt
+
+# --- 1. Definição dos Pontos da Trajetória e Tempo ---
+# Pontos (x, y) da trajetória da extrusora.
+x_pontos = np.array([0, 0, 2, 2, 4, 4, 6, 6])
+y_pontos = np.array([0, 2, 2, 3, 3, 2, 2, 0])
+
+# Instantes de tempo (t) para cada ponto.
+t_pontos = np.linspace(0, 21, len(x_pontos)) # Aumentei o tempo para um movimento mais suave
+
+# --- 2. Construção da Spline de Grau 5 por Segmentos ---
+polinomios_x = []
+polinomios_y = []
+
+# Iteramos sobre cada segmento (entre o ponto i e i+1)
+for i in range(len(t_pontos) - 1):
+    t_intervalo = [t_pontos[i], t_pontos[i+1]]
+
+    # Condições para a coordenada X no início e fim do segmento
+    # Formato: [ [posição, velocidade, aceleração], [posição, velocidade, aceleração] ]
+    condicoes_x = [
+        [x_pontos[i], 0, 0],      # Ponto inicial: P(t_i)=x_i, P'(t_i)=0, P''(t_i)=0
+        [x_pontos[i+1], 0, 0]   # Ponto final:   P(t_{i+1})=x_{i+1}, P'(t_{i+1})=0, P''(t_{i+1})=0
+    ]
+
+    # Condições para a coordenada Y
+    condicoes_y = [
+        [y_pontos[i], 0, 0],
+        [y_pontos[i+1], 0, 0]
+    ]
+
+    # Cria o polinômio de grau 5 para o segmento atual
+    poly_x = BPoly.from_derivatives(t_intervalo, condicoes_x)
+    poly_y = BPoly.from_derivatives(t_intervalo, condicoes_y)
+
+    polinomios_x.append(poly_x)
+    polinomios_y.append(poly_y)
+
+
+# --- 3. Geração dos pontos da trajetória e velocidade ---
+# Inicializa listas para armazenar os resultados completos
+t_final = np.array([])
+x_final = np.array([])
+y_final = np.array([])
+v_final = np.array([])
+
+# Avalia cada segmento polinomial
+for i in range(len(polinomios_x)):
+    # Cria uma grade de tempo fina para o segmento atual
+    t_segmento = np.linspace(t_pontos[i], t_pontos[i+1], 200)
+
+    # Concatena o tempo
+    t_final = np.concatenate((t_final, t_segmento))
+
+    # Calcula e concatena as posições
+    x_segmento = polinomios_x[i](t_segmento)
+    y_segmento = polinomios_y[i](t_segmento)
+    x_final = np.concatenate((x_final, x_segmento))
+    y_final = np.concatenate((y_final, y_segmento))
+
+    # Calcula e concatena a velocidade
+    vx_segmento = polinomios_x[i](t_segmento, 1) # Derivada de ordem 1
+    vy_segmento = polinomios_y[i](t_segmento, 1)
+    v_segmento = np.sqrt(vx_segmento**2 + vy_segmento**2)
+    v_final = np.concatenate((v_final, v_segmento))
+
+
+# --- 4. Plotagem dos Gráficos ---
+plt.style.use('seaborn-v0_8-whitegrid')
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 12), gridspec_kw={'height_ratios': [2, 1]})
+fig.suptitle('Movimento com Spline de Grau 5', fontsize=16)
+
+# Gráfico 1: Trajetória XY
+ax1.plot(x_final, y_final, '-', label='Trajetória Gerada (Grau 5)')
+ax1.plot(x_pontos, y_pontos, 'o', color='red', markersize=9, label='Pontos de Parada (Nós)')
+ax1.set_title('Trajetória XY da Extrusora')
+ax1.set_xlabel('Posição X (mm)')
+ax1.set_ylabel('Posição Y (mm)')
+ax1.legend()
+ax1.axis('equal')
+ax1.grid(True)
+
+# Gráfico 2: Velocidade
+ax2.plot(t_final, v_final, '-', label='Magnitude da Velocidade')
+ax2.plot(t_pontos, np.zeros_like(t_pontos), 'ro', markersize=9, label='Velocidade Nula nos Nós')
+ax2.set_title('Velocidade x Tempo ')
+ax2.set_xlabel('Tempo (s)')
+ax2.set_ylabel('Velocidade (mm/s)')
+ax2.legend()
+ax2.grid(True)
+
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
