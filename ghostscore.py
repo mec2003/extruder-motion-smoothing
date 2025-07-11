@@ -12,8 +12,8 @@ l = 0.02    # comprimento do filamento [m]
 g = 9.81
 
 # Pontos de trajetória
-x_pontos = np.array([2, 2, 2, 2, 2, 2, 2, 2])
-y_pontos = np.array([2, 2, 2, 2, 2, 2, 2, 2])
+x_pontos = np.array([0, 2, 3, 5, 6, 9, 10, 16]) 
+y_pontos = np.array([0, 2, 1, 3, 10, 3, 4, 4])
 
 # Obtemos os splines
 polys_x, polys_y, t_pontos = gerar_splines(x_pontos, y_pontos)
@@ -97,6 +97,20 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
     int_gauss_mod = gauss_legendre_integrate(mod_dtheta_dt, t_out, n=5)
     print(f"Integral de |dθ/dt| por quadratura de Gauss (n=5): {int_gauss_mod:.4f} rad")
     
+    # Gráfico da trajetória original sem interpolação
+    plt.figure(figsize=(6, 6))
+    plt.plot(x_pontos, y_pontos, 'o-', color='purple', label='Trajetória original')
+    for i, (x, y) in enumerate(zip(x_pontos, y_pontos)):
+        plt.text(x, y, f'{i}', fontsize=8, verticalalignment='bottom', horizontalalignment='right')
+    plt.xlabel('x [mm]')
+    plt.ylabel('y [mm]')
+    plt.title('Trajetória da extrusora')
+    plt.axis('equal')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+    
     # Plot da velocidade linear
     plt.figure(figsize=(10, 4))
     plt.plot(t_total, v_mod, label='Velocidade linear |v|', color='blue')
@@ -105,7 +119,7 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
         plt.text(t_n, np.interp(t_n, t_total, v_mod), f'{t_n:.1f}', fontsize=8, rotation=90,
                 verticalalignment='bottom', horizontalalignment='right')
     plt.xlabel('Tempo [s]')
-    plt.ylabel('Velocidade linear [m/s]')
+    plt.ylabel('Velocidade linear [mm/s]')
     plt.title('Módulo da velocidade linear da extrusora')
     plt.grid(True)
     plt.tight_layout()
@@ -120,7 +134,7 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
         plt.text(t_n, np.interp(t_n, t_total, a_mod), f'{t_n:.1f}', fontsize=8, rotation=90,
                 verticalalignment='bottom', horizontalalignment='right')
     plt.xlabel('Tempo [s]')
-    plt.ylabel('Aceleração linear [m/s²]')
+    plt.ylabel('Aceleração linear [mm/s²]')
     plt.title('Módulo da aceleração linear da extrusora')
     plt.grid(True)
     plt.tight_layout()
@@ -155,6 +169,7 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
     plt.tight_layout()
     plt.legend()
     plt.show()
+
 
     # Gráfico do módulo da velocidade angular
     plt.figure(figsize=(10, 4))
