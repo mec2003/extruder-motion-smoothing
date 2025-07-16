@@ -1,19 +1,19 @@
 # ghostscore.py
-from numpy.polynomial.legendre import leggauss
+# from numpy.polynomial.legendre import leggauss # Removido
 from spline import gerar_splines
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import TransferFunction, lsim
 
 # Parâmetros físicos
-mt = 0.7     # massa da extrusora [kg]
+mt = 0.7      # massa da extrusora [kg]
 mp = 0.01   # massa do filamento [kg]
-l = 0.02    # comprimento do filamento [m]
+l = 0.02      # comprimento do filamento [m]
 g = 9.81
 
 # Pontos de trajetória
-x_pontos = np.array([0, 2, 3, 5, 6, 9, 10, 16]) 
-y_pontos = np.array([0, 2, 1, 3, 10, 3, 4, 4])
+x_pontos = np.array([2, 2, 5, 5, 6, 6, 10, 10])
+y_pontos = np.array([0, 2, 2, 7, 7, 3, 3, 4])
 
 # Obtemos os splines
 polys_x, polys_y, t_pontos = gerar_splines(x_pontos, y_pontos)
@@ -61,42 +61,13 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
     
     dtheta_dt = np.gradient(theta,dt)
 
-    from numpy.polynomial.legendre import leggauss
-
-# Módulo da velocidade angular
+    # Módulo da velocidade angular
     mod_dtheta_dt = np.abs(dtheta_dt)
-
-    # Função de quadratura de Gauss-Legendre composta
-    def gauss_legendre_integrate(f_vals, t_vals, n=5):
-            
-        if len(t_vals) < 2:
-            raise ValueError("Intervalo de tempo muito curto.")
-
-        integral = 0.0
-        nodes, weights = leggauss(n)  # Pontos e pesos da Gauss-Legendre em [-1, 1]
-
-        for i in range(len(t_vals) - 1):
-            a = t_vals[i]
-            b = t_vals[i + 1]
-            mid = (a + b) / 2
-            half_length = (b - a) / 2
-
-            # Interpolação linear dos valores de f para o intervalo [a, b]
-            fa = f_vals[i]
-            fb = f_vals[i + 1]
-
-            def f_interp(xi):
-                t_mapped = mid + half_length * xi
-                return fa + (fb - fa) * (t_mapped - a) / (b - a)
-
-            integral += half_length * sum(w * f_interp(x) for x, w in zip(nodes, weights))
-
-        return integral
-
-    # Integral de |dθ/dt| com quadratura de Gauss
-    int_gauss_mod = gauss_legendre_integrate(mod_dtheta_dt, t_out, n=5)
-    print(f"Integral de |dθ/dt| por quadratura de Gauss (n=5): {int_gauss_mod:.4f} rad")
     
+    # Integral de |dθ/dt| com o método dos trapézios
+    int_trapz_mod = np.trapezoid(mod_dtheta_dt, t_out)
+    print(f"Integral de |dθ/dt| pelo método dos trapézios: {int_trapz_mod:.4f} rad")
+
     # Gráfico da trajetória original sem interpolação
     plt.figure(figsize=(6, 6))
     plt.plot(x_pontos, y_pontos, 'o-', color='purple', label='Trajetória original')
@@ -117,7 +88,7 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
     for t_n in t_pontos:
         plt.axvline(t_n, color='gray', linestyle='--', alpha=0.5)
         plt.text(t_n, np.interp(t_n, t_total, v_mod), f'{t_n:.1f}', fontsize=8, rotation=90,
-                verticalalignment='bottom', horizontalalignment='right')
+                 verticalalignment='bottom', horizontalalignment='right')
     plt.xlabel('Tempo [s]')
     plt.ylabel('Velocidade linear [mm/s]')
     plt.title('Módulo da velocidade linear da extrusora')
@@ -132,7 +103,7 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
     for t_n in t_pontos:
         plt.axvline(t_n, color='gray', linestyle='--', alpha=0.5)
         plt.text(t_n, np.interp(t_n, t_total, a_mod), f'{t_n:.1f}', fontsize=8, rotation=90,
-                verticalalignment='bottom', horizontalalignment='right')
+                 verticalalignment='bottom', horizontalalignment='right')
     plt.xlabel('Tempo [s]')
     plt.ylabel('Aceleração linear [mm/s²]')
     plt.title('Módulo da aceleração linear da extrusora')
@@ -146,7 +117,7 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
     for t_n in t_pontos:
         plt.axvline(t_n, color='gray', linestyle='--', alpha=0.5)
         plt.text(t_n, np.interp(t_n, t_out, theta), f'{t_n:.1f}', fontsize=8, rotation=90,
-            verticalalignment='bottom', horizontalalignment='right')
+           verticalalignment='bottom', horizontalalignment='right')
     plt.xlabel('Tempo [s]')
     plt.ylabel('Ângulo do filamento θ(t) [rad]')
     plt.title('Resposta do filamento à aceleração da extrusora')
@@ -161,7 +132,7 @@ def simulate_theta(t, acc_list, mt, mp, l, g=9.81):
     for t_n in t_pontos:
         plt.axvline(t_n, color='gray', linestyle='--', alpha=0.5)
         plt.text(t_n, np.interp(t_n, t_out, dtheta_dt), f'{t_n:.1f}', fontsize=8, rotation=90,
-             verticalalignment='bottom', horizontalalignment='right')
+                 verticalalignment='bottom', horizontalalignment='right')
     plt.xlabel('Tempo [s]')
     plt.ylabel('Velocidade angular dθ/dt [rad/s]')
     plt.title('Velocidade angular do filamento')
